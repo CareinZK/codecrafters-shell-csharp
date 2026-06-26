@@ -1,3 +1,4 @@
+
 class Program
 {
     static void Main()
@@ -9,6 +10,7 @@ class Program
             "type"
         };
         bool isWorking = true;
+
         while (isWorking)
         {
             Console.Write("$ ");
@@ -27,9 +29,47 @@ class Program
                     break;
                 case "type":
                     if (builtinCommands.Contains(argument))
+                    {
                         Console.WriteLine($"{argument} is a shell builtin");
-                    else 
+                        break;
+                    }
+
+                    string? pathVariable = Environment.GetEnvironmentVariable("PATH");
+
+                    if (pathVariable is null)
+                    {
                         Console.WriteLine($"{argument}: not found");
+                        break;
+                    }
+
+                    bool found = false;
+
+                    foreach (string directory in pathVariable.Split(Path.PathSeparator))
+                    {
+                        string fullPath = Path.Combine(directory, argument);
+
+                        if (!File.Exists(fullPath))
+                            continue;
+
+                        // Linux / macOS
+                        UnixFileMode mode = File.GetUnixFileMode(fullPath);
+
+                        bool executable =
+                            (mode & UnixFileMode.UserExecute) != 0 ||
+                            (mode & UnixFileMode.GroupExecute) != 0 ||
+                            (mode & UnixFileMode.OtherExecute) != 0;
+
+                        if (!executable)
+                            continue;
+
+                        Console.WriteLine($"{argument} is {fullPath}");
+                        found = true;
+                        break;
+                    }
+
+                    if (!found)
+                        Console.WriteLine($"{argument}: not found");
+
                     break;
                 default:
                     Console.WriteLine($"{command}: command not found");
