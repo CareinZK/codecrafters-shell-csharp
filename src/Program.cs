@@ -19,6 +19,7 @@ class Program
             var splitInput = input.Split(" ");
             string argument = string.Join(" ", splitInput.Skip(1));
             string command = input.Split(" ").First();
+            string file = IsExistent(pathVariable, argument);
 
             switch (command)
             {
@@ -42,7 +43,7 @@ class Program
                         break;
                     }
 
-                    string file = IsExistent(pathVariable, argument);
+                    
 
                     if (file is not null && IsExecutable(file))
                     {
@@ -53,7 +54,11 @@ class Program
                     break;
 
                 default:
-                    Console.WriteLine($"{command}: command not found");
+    
+                    if (file is not null && IsExecutable(file))
+                    {
+                        Process.Start(file);
+                    }
                     break;
 
             }
@@ -67,7 +72,7 @@ class Program
                                 UnixFileMode.OtherExecute)) != 0;
             }
 
-           static string IsExistent(string pathVariable, string argument)
+           static string? IsExistent(string pathVariable, string argument)
             {
                 string file = null;
                 foreach (string directory in pathVariable.Split(Path.PathSeparator))
@@ -77,7 +82,6 @@ class Program
                     if (!File.Exists(fullPath))
                         continue;
 
-                    Console.WriteLine($"{argument} is {fullPath}");
                     file = fullPath;
                     break;
                 }
