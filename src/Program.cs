@@ -1,4 +1,4 @@
-
+using System.Diagnostics;
 class Program
 {
     static void Main()
@@ -10,6 +10,7 @@ class Program
             "type"
         };
         bool isWorking = true;
+        string? pathVariable = Environment.GetEnvironmentVariable("PATH");
 
         while (isWorking)
         {
@@ -34,7 +35,6 @@ class Program
                         break;
                     }
 
-                    string? pathVariable = Environment.GetEnvironmentVariable("PATH");
 
                     if (pathVariable is null)
                     {
@@ -42,28 +42,16 @@ class Program
                         break;
                     }
 
-                    bool found = false;
+                    string file = IsExistent(pathVariable, argument);
 
-                    foreach (string directory in pathVariable.Split(Path.PathSeparator))
+                    if (file is not null && IsExecutable(file))
                     {
-                        string fullPath = Path.Combine(directory, argument);
-
-                        if (!File.Exists(fullPath))
-                            continue;
-
-                        // Linux / macOS                     
-                        if (!IsExecutable(fullPath))
-                            continue;
-
-                        Console.WriteLine($"{argument} is {fullPath}");
-                        found = true;
+                        Console.WriteLine($"{argument} is {file}");
                         break;
                     }
-
-                    if (!found)
-                        Console.WriteLine($"{argument}: not found");
-
+                    Console.WriteLine($"{argument}: not found");
                     break;
+
                 default:
                     Console.WriteLine($"{command}: command not found");
                     break;
@@ -77,6 +65,23 @@ class Program
                 return (mode & (UnixFileMode.UserExecute |
                                 UnixFileMode.GroupExecute |
                                 UnixFileMode.OtherExecute)) != 0;
+            }
+
+           static string IsExistent(string pathVariable, string argument)
+            {
+                string file = null;
+                foreach (string directory in pathVariable.Split(Path.PathSeparator))
+                {
+                    string fullPath = Path.Combine(directory, argument);
+
+                    if (!File.Exists(fullPath))
+                        continue;
+
+                    Console.WriteLine($"{argument} is {fullPath}");
+                    file = fullPath;
+                    break;
+                }
+                return file;
             }
         }
 
