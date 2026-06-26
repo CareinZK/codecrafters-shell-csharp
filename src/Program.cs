@@ -3,7 +3,8 @@ class Program
     static void Main()
     {
         var commandsList = new List<string>();
-        while (true)
+        bool isWorking = true;
+        while (isWorking)
         {
             Console.Write("$ ");
             string command = Console.ReadLine();
@@ -11,7 +12,7 @@ class Program
             switch (command)
             {
                 case "exit":
-                    goto endLoop;
+                    isWorking = false;
                 break;
                 default:
                     Console.WriteLine($"{command}: command not found");
@@ -20,6 +21,6 @@ class Program
             }
 
         }
-    endLoop:
+
     }
 }
