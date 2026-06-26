@@ -20,43 +20,33 @@ class Program
             var splitInput = input.Split(" ");
             string argument = string.Join(" ", splitInput.Skip(1));
             string command = input.Split(" ").First();
-            
+
 
             switch (command)
             {
                 case "exit":
                     isWorking = false;
-                break;
+                    break;
                 case "echo":
                     Console.WriteLine(argument);
                     break;
                 case "type":
-                    if (builtinCommands.Contains(argument))
-                    {
-                        Console.WriteLine($"{argument} is a shell builtin");
-                        break;
-                    }
+                    string? fileType = FindExecutable(pathVariable, argument);
 
-
-                    if (pathVariable is null)
-                    {
-                        Console.WriteLine($"{argument}: not found");
-                        break;
-                    }
-
-
-                    string fileType = IsExistent(pathVariable, argument);
-                    if (fileType is not null && IsExecutable(fileType))
+                    if (fileType is not null)
                     {
                         Console.WriteLine($"{argument} is {fileType}");
-                        break;
                     }
-                    
+                    else
+                    {
+                        Console.WriteLine($"{argument}: not found");
+                    }
                     break;
 
                 default:
-                    string file = IsExistent(pathVariable, command);
-                    if (file is not null && IsExecutable(file))
+                    string? file = FindExecutable(pathVariable, command);
+
+                    if (file is not null)
                     {
                         using Process process = Process.Start(new ProcessStartInfo
                         {
@@ -67,8 +57,11 @@ class Program
                         })!;
                         process.WaitForExit();
                         break;
-                    }                 
-                   Console.WriteLine($"{command}: not found");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"{command}: not found");
+                    }
                     break;
 
             }
@@ -82,22 +75,23 @@ class Program
                                 UnixFileMode.OtherExecute)) != 0;
             }
 
-           static string? IsExistent(string pathVariable, string argument)
+            static string? FindExecutable(string pathVariable, string command)
             {
-                string file = null;
                 foreach (string directory in pathVariable.Split(Path.PathSeparator))
                 {
-                    string fullPath = Path.Combine(directory, argument);
+                    string fullPath = Path.Combine(directory, command);
 
                     if (!File.Exists(fullPath))
                         continue;
 
-                    file = fullPath;
-                    break;
+                    if (!IsExecutable(fullPath))
+                        continue;
+
+                    return fullPath;
                 }
-                return file;
+
+                return null;
             }
         }
-
-    }
+        }
 }
