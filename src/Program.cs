@@ -60,7 +60,8 @@ class Program
                     {
                         using Process process = Process.Start(new ProcessStartInfo
                         {
-                            FileName = file,
+                            FileName = command,
+                            WorkingDirectory = Path.GetDirectoryName(file)!,
                             Arguments = argument,
                             UseShellExecute = false
                         })!;
