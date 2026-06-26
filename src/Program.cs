@@ -6,7 +6,7 @@ class Program
         Console.Write("$ ");
         string command = Console.ReadLine();
         var commandsList = new List<string>();
-        if (!commandsList.Contains(command))
+        if (commandsList.Contains(command))
         {
 
         }
