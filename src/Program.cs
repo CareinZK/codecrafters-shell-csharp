@@ -8,14 +8,18 @@ class Program
             Console.Write("$ ");
             string command = Console.ReadLine();
 
-            if (commandsList.Contains(command))
+            switch (command)
             {
+                case "exit":
+                    goto endLoop;
+                break;
+                default:
+                    Console.WriteLine($"{command}: command not found");
+                    break;
 
             }
-            else
-            {
-                Console.WriteLine($"{command}: command not found");
-            }
+
         }
+    endLoop:
     }
 }
