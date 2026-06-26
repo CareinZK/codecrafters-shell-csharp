@@ -19,7 +19,7 @@ class Program
             var splitInput = input.Split(" ");
             string argument = string.Join(" ", splitInput.Skip(1));
             string command = input.Split(" ").First();
-            string file = IsExistent(pathVariable, argument);
+            
 
             switch (command)
             {
@@ -43,22 +43,29 @@ class Program
                         break;
                     }
 
-                    
 
-                    if (file is not null && IsExecutable(file))
+                    string fileType = IsExistent(pathVariable, argument);
+                    if (fileType is not null && IsExecutable(fileType))
                     {
-                        Console.WriteLine($"{argument} is {file}");
+                        Console.WriteLine($"{argument} is {fileType}");
                         break;
                     }
-                    Console.WriteLine($"{argument}: not found");
+                    
                     break;
 
                 default:
-    
+                    string file = IsExistent(pathVariable, command);
                     if (file is not null && IsExecutable(file))
                     {
-                        Process.Start(file);
-                    }
+                        Process.Start(new ProcessStartInfo
+                        {
+                            FileName = file,
+                            Arguments = argument,
+                            UseShellExecute = false
+                        });
+                        break;
+                    }                 
+                   Console.WriteLine($"{command}: not found");
                     break;
 
             }
