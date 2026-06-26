@@ -7,13 +7,18 @@ class Program
         while (isWorking)
         {
             Console.Write("$ ");
-            string command = Console.ReadLine();
+            string input = Console.ReadLine();
+            var splitInput = input.Split(" ");
+            string command = splitInput[0];
 
             switch (command)
             {
                 case "exit":
                     isWorking = false;
                 break;
+                case "echo":
+                    Console.WriteLine(string.Join(" ", splitInput.Skip(1)));
+                    break;
                 default:
                     Console.WriteLine($"{command}: command not found");
                     break;
