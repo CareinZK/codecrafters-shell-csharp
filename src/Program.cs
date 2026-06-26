@@ -51,15 +51,8 @@ class Program
                         if (!File.Exists(fullPath))
                             continue;
 
-                        // Linux / macOS
-                        UnixFileMode mode = File.GetUnixFileMode(fullPath);
-
-                        bool executable =
-                            (mode & UnixFileMode.UserExecute) != 0 ||
-                            (mode & UnixFileMode.GroupExecute) != 0 ||
-                            (mode & UnixFileMode.OtherExecute) != 0;
-
-                        if (!executable)
+                        // Linux / macOS                     
+                        if (!IsExecutable(fullPath))
                             continue;
 
                         Console.WriteLine($"{argument} is {fullPath}");
@@ -77,6 +70,14 @@ class Program
 
             }
 
+            static bool IsExecutable(string path)
+            {
+                var mode = File.GetUnixFileMode(path);
+
+                return (mode & (UnixFileMode.UserExecute |
+                                UnixFileMode.GroupExecute |
+                                UnixFileMode.OtherExecute)) != 0;
+            }
         }
 
     }
