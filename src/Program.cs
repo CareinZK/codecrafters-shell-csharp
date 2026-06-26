@@ -31,6 +31,11 @@ class Program
                     Console.WriteLine(argument);
                     break;
                 case "type":
+                    if (builtinCommands.Contains(argument))
+                    {
+                        Console.WriteLine($"{argument} is a shell builtin");
+                        break;
+                    }
                     string? fileType = FindExecutable(pathVariable, argument);
 
                     if (fileType is not null)
