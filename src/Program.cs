@@ -15,7 +15,8 @@ class Program
         while (isWorking)
         {
             Console.Write("$ ");
-            string input = Console.ReadLine();
+            Console.Out.Flush();
+            string? input = Console.ReadLine();
             var splitInput = input.Split(" ");
             string argument = string.Join(" ", splitInput.Skip(1));
             string command = input.Split(" ").First();
@@ -57,12 +58,13 @@ class Program
                     string file = IsExistent(pathVariable, command);
                     if (file is not null && IsExecutable(file))
                     {
-                        Process.Start(new ProcessStartInfo
+                        using Process process = Process.Start(new ProcessStartInfo
                         {
                             FileName = file,
                             Arguments = argument,
                             UseShellExecute = false
-                        });
+                        })!;
+                        process.WaitForExit();
                         break;
                     }                 
                    Console.WriteLine($"{command}: not found");
