@@ -41,7 +41,7 @@ class Program
                     {
                         argument = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
                     }
-                    else if (Directory.Exists(argument))
+                    if (Directory.Exists(argument))
                     {
                         Directory.SetCurrentDirectory(argument); // automatically handles both absolute and relative paths
                     }
