@@ -9,7 +9,8 @@ class Program
             "exit",
             "echo",
             "type",
-            "pwd"
+            "pwd",
+            "cd"
         };
         bool isWorking = true;
         string? pathVariable = Environment.GetEnvironmentVariable("PATH");
@@ -34,6 +35,14 @@ class Program
                     break;
                 case "pwd":
                     Console.WriteLine(Directory.GetCurrentDirectory());
+                    break;
+                case "cd":
+                    if (Directory.Exists(argument))
+                    {
+                        Directory.SetCurrentDirectory(argument);
+                    }
+                    else
+                    Console.WriteLine($"cd: {argument}: No such file or directory");
                     break;
                 case "type":
                     if (builtinCommands.Contains(argument))
