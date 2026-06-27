@@ -8,7 +8,8 @@ class Program
         {
             "exit",
             "echo",
-            "type"
+            "type",
+            "pwd"
         };
         bool isWorking = true;
         string? pathVariable = Environment.GetEnvironmentVariable("PATH");
