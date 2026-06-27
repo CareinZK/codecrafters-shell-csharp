@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.IO;
 class Program
 {
     static void Main()
@@ -29,6 +30,9 @@ class Program
                     break;
                 case "echo":
                     Console.WriteLine(argument);
+                    break;
+                case "pwd":
+                    Console.WriteLine(Directory.GetCurrentDirectory());
                     break;
                 case "type":
                     if (builtinCommands.Contains(argument))
