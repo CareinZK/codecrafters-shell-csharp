@@ -37,9 +37,13 @@ class Program
                     Console.WriteLine(Directory.GetCurrentDirectory());
                     break;
                 case "cd":
-                    if (Directory.Exists(argument))
+                    if (argument == "~")
                     {
-                        Directory.SetCurrentDirectory(argument);
+                        argument = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+                    }
+                    else if (Directory.Exists(argument))
+                    {
+                        Directory.SetCurrentDirectory(argument); // automatically handles both absolute and relative paths
                     }
                     else
                     Console.WriteLine($"cd: {argument}: No such file or directory");
