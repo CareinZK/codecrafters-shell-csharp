@@ -1,7 +1,12 @@
+using CodeCrafters.Shell.src;
 using System.Diagnostics;
 using System.IO;
+
+namespace CodeCrafters.Shell.src;
+
 class Program
 {
+
     static void Main()
     {
         var builtinCommands = new List<string>()
@@ -14,16 +19,19 @@ class Program
         };
         bool isWorking = true;
         string? pathVariable = Environment.GetEnvironmentVariable("PATH");
+        ReadLine.AutoCompletionHandler = new AutoCompletionHandler();
 
         while (isWorking)
         {
-            Console.Write("$ ");
-            Console.Out.Flush();
-            string? input = Console.ReadLine();
+            string? input = ReadLine.Read("$ ");
+
+
             var splitInput = input.Split(" ");
             string argument = string.Join(" ", splitInput.Skip(1));
-            string command = input.Split(" ").First();
-
+            string command = splitInput[0];
+            
+            if (input is null)
+                break;
 
             switch (command)
             {
@@ -41,7 +49,7 @@ class Program
                     {
                         argument = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
                     }
-                    if (Directory.Exists(argument))
+                     if (Directory.Exists(argument))
                     {
                         Directory.SetCurrentDirectory(argument); // automatically handles both absolute and relative paths
                     }
