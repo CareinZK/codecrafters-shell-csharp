@@ -1,29 +1,93 @@
-﻿/*
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using ReadLine;
 
 namespace CodeCrafters.Shell.src;
 
-public class AutoCompletionHandler : IAutoCompleteHandler
+public static class AutoCompletionHandler
 {
-    private static readonly string[] Commands = { "echo", "exit" };
-
-    public char[] Separators { get; set; } = new[] { ' ' };
-
-    public string[] GetSuggestions(string text, int index)
+    public static string? ReadLineWithAutocomplete(string prompt, List<string> autoCompleteCommands)
     {
-        string currentWord;
+        Console.Write(prompt);
 
-        if (index < 0 || index >= text.Length)
-            currentWord = text;
-        else
-            currentWord = text[(index + 1)..];
+        var buffer = new StringBuilder();
 
-        return Commands
-            .Where(command => command.StartsWith(currentWord, StringComparison.Ordinal))
-            .ToArray();
+        while (true)
+        {
+            ConsoleKeyInfo keyInfo = Console.ReadKey(intercept: true);
+
+            if (keyInfo.Key == ConsoleKey.Enter)
+            {
+                Console.WriteLine();
+                return buffer.ToString();
+            }
+
+            if (keyInfo.Key == ConsoleKey.Backspace)
+            {
+                if (buffer.Length > 0)
+                {
+                    buffer.Length--;
+                    Console.Write("\b \b");
+                }
+
+                continue;
+            }
+
+            if (keyInfo.Key == ConsoleKey.Tab)
+            {
+                TryAutocomplete(buffer, autoCompleteCommands);
+                continue;
+            }
+
+            char ch = keyInfo.KeyChar;
+            if (!char.IsControl(ch))
+            {
+                buffer.Append(ch);
+                Console.Write(ch);
+            }
+        }
+    }
+
+    private static void TryAutocomplete(StringBuilder buffer, List<string> autoCompleteCommands)
+    {
+        string current = buffer.ToString();
+
+        int firstSpaceIndex = current.IndexOf(' ');
+        string prefix = firstSpaceIndex >= 0 ? current[..firstSpaceIndex] : current;
+
+        if (string.IsNullOrEmpty(prefix))
+        {
+            return;
+        }
+
+        List<string> matches = autoCompleteCommands
+            .Where(command => command.StartsWith(prefix, StringComparison.Ordinal))
+            .ToList();
+
+        if (matches.Count != 1)
+        {
+            return;
+        }
+
+        string completion = matches[0];
+
+        if (prefix == completion)
+        {
+            if (current.Length == completion.Length)
+            {
+                buffer.Append(' ');
+                Console.Write(' ');
+            }
+
+            return;
+        }
+
+        string suffix = completion.Substring(prefix.Length);
+        buffer.Append(suffix);
+        Console.Write(suffix);
+
+        buffer.Append(' ');
+        Console.Write(' ');
     }
 }
-*/
+
