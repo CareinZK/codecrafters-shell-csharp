@@ -107,11 +107,12 @@ class Program
                 default:
                     string? file = FindExecutable(pathVariable, command);
 
+
                     if (file is not null)
                     {
                         using Process? process = Process.Start(new ProcessStartInfo
                         {
-                            FileName = file,
+                            FileName = command,
                             Arguments = argument,
                             UseShellExecute = false
                         });
@@ -123,6 +124,8 @@ class Program
                         Console.WriteLine($"{command}: not found");
                     }
                     break;
+
+
             }
         }
     }
