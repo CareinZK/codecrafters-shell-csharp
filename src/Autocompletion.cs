@@ -66,6 +66,7 @@ public static class AutoCompletionHandler
 
         if (matches.Count != 1)
         {
+            Console.WriteLine('\u2407'); // ␇
             return;
         }
 
