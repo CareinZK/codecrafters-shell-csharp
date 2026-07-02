@@ -1,4 +1,3 @@
-using CodeCrafters.Shell.src;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -17,7 +16,7 @@ class Program
 "cd"
 };
 
-    private static readonly List<string> AutoCompleteCommands = new()
+private static readonly List<string> AutoCompleteBuiltins = new()
 {
     "echo",
     "exit"
@@ -30,7 +29,7 @@ class Program
 
         while (isWorking)
         {
-            string? input = AutoCompletionHandler.ReadLineWithAutocomplete("$ ", AutoCompleteCommands);
+            string? input = ReadLineWithAutocomplete("$ ", prefix => GetAutocompleteCandidates(prefix, pathVariable));
 
             if (input is null)
             {
@@ -112,7 +111,7 @@ class Program
                     {
                         using Process? process = Process.Start(new ProcessStartInfo
                         {
-                            FileName = command,
+                            FileName = file,
                             Arguments = argument,
                             UseShellExecute = false
                         });
@@ -124,12 +123,160 @@ class Program
                         Console.WriteLine($"{command}: not found");
                     }
                     break;
-
             }
         }
     }
 
+    private static string? ReadLineWithAutocomplete(string prompt, Func<string, List<string>> getCandidates)
+    {
+        Console.Write(prompt);
 
+        var buffer = new StringBuilder();
+
+        while (true)
+        {
+            ConsoleKeyInfo keyInfo = Console.ReadKey(intercept: true);
+
+            if (keyInfo.Key == ConsoleKey.Enter)
+            {
+                Console.WriteLine();
+                return buffer.ToString();
+            }
+
+            if (keyInfo.Key == ConsoleKey.Backspace)
+            {
+                if (buffer.Length > 0)
+                {
+                    buffer.Length--;
+                    Console.Write("\b \b");
+                }
+
+                continue;
+            }
+
+            if (keyInfo.Key == ConsoleKey.Tab)
+            {
+                TryAutocomplete(buffer, getCandidates);
+                continue;
+            }
+
+            char ch = keyInfo.KeyChar;
+            if (!char.IsControl(ch))
+            {
+                buffer.Append(ch);
+                Console.Write(ch);
+            }
+        }
+    }
+
+    private static void TryAutocomplete(StringBuilder buffer, Func<string, List<string>> getCandidates)
+    {
+        string current = buffer.ToString();
+
+        int firstSpaceIndex = current.IndexOf(' ');
+        string prefix = firstSpaceIndex >= 0 ? current[..firstSpaceIndex] : current;
+
+        if (string.IsNullOrEmpty(prefix))
+        {
+            return;
+        }
+
+        List<string> matches = getCandidates(prefix);
+
+        if (matches.Count != 1)
+        {
+            Console.Write((char)7);
+            return;
+        }
+
+        string completion = matches[0];
+
+        if (completion == prefix)
+        {
+            if (current.Length == prefix.Length)
+            {
+                buffer.Append(' ');
+                Console.Write(' ');
+            }
+
+            return;
+        }
+
+        string suffix = completion.Substring(prefix.Length);
+        buffer.Append(suffix);
+        Console.Write(suffix);
+
+        buffer.Append(' ');
+        Console.Write(' ');
+    }
+
+    private static List<string> GetAutocompleteCandidates(string prefix, string? pathVariable)
+    {
+        var candidates = new HashSet<string>(StringComparer.Ordinal);
+
+        foreach (string builtin in AutoCompleteBuiltins)
+        {
+            if (builtin.StartsWith(prefix, StringComparison.Ordinal))
+            {
+                candidates.Add(builtin);
+            }
+        }
+
+        foreach (string executable in FindExecutableNames(pathVariable, prefix))
+        {
+            candidates.Add(executable);
+        }
+
+        return candidates.ToList();
+    }
+
+    private static IEnumerable<string> FindExecutableNames(string? pathVariable, string prefix)
+    {
+        if (string.IsNullOrEmpty(pathVariable))
+        {
+            yield break;
+        }
+
+        var seen = new HashSet<string>(StringComparer.Ordinal);
+
+        foreach (string directory in pathVariable.Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries))
+        {
+            if (!Directory.Exists(directory))
+            {
+                continue;
+            }
+
+            IEnumerable<string> files;
+            try
+            {
+                files = Directory.EnumerateFiles(directory);
+            }
+            catch
+            {
+                continue;
+            }
+
+            foreach (string fullPath in files)
+            {
+                string fileName = Path.GetFileName(fullPath);
+
+                if (!fileName.StartsWith(prefix, StringComparison.Ordinal))
+                {
+                    continue;
+                }
+
+                if (!IsExecutable(fullPath))
+                {
+                    continue;
+                }
+
+                if (seen.Add(fileName))
+                {
+                    yield return fileName;
+                }
+            }
+        }
+    }
 
     private static string? FindExecutable(string? pathVariable, string command)
     {
@@ -140,6 +287,11 @@ class Program
 
         foreach (string directory in pathVariable.Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries))
         {
+            if (!Directory.Exists(directory))
+            {
+                continue;
+            }
+
             string fullPath = Path.Combine(directory, command);
 
             if (!File.Exists(fullPath))
@@ -174,63 +326,4 @@ class Program
         }
     }
 
-
-
-    public class Trie
-    {
-
-        private class TrieNode()
-        {
-            public Dictionary<char, TrieNode> children { get; } = new Dictionary<char, TrieNode>();
-            public bool isEnd { get; set; }
-        }
-
-        private TrieNode _root;
-        public Trie()
-        {
-            _root = new TrieNode();
-        }
-
-        public void Insert(string word)
-        {
-            var current = _root;
-
-            foreach (var ch in word)
-            {
-                if (!current.children.ContainsKey(ch))
-                {
-                    current.children[ch] = new TrieNode();
-                }
-                current = current.children[ch];
-            }
-            current.isEnd = true;
-        }
-
-        public bool Search(string word)
-        {
-            var trie = FindNode(word);
-            return trie != null && trie.isEnd;
-        }
-
-        public bool StartsWith(string prefix)
-        {
-            var trie = FindNode(prefix);
-            return trie != null;
-        }
-
-        private TrieNode? FindNode(string word)
-        {
-            var current = _root;
-
-            foreach (var ch in word)
-            {
-                if (!current.children.ContainsKey(ch))
-                {
-                    return null;
-                }
-                current = current.children[ch];
-            }
-            return current;
-        }
-    }
 }
