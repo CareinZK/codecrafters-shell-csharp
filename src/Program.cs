@@ -111,7 +111,7 @@ private static readonly List<string> AutoCompleteBuiltins = new()
                     {
                         using Process? process = Process.Start(new ProcessStartInfo
                         {
-                            FileName = file,
+                            FileName = command,
                             Arguments = argument,
                             UseShellExecute = false
                         });
@@ -120,7 +120,7 @@ private static readonly List<string> AutoCompleteBuiltins = new()
                     }
                     else
                     {
-                        Console.WriteLine($"{argument}: not found");
+                        Console.WriteLine($"{command}: not found");
                     }
                     break;
             }
