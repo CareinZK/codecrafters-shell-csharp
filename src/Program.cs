@@ -120,7 +120,7 @@ private static readonly List<string> AutoCompleteBuiltins = new()
                     }
                     else
                     {
-                        Console.WriteLine($"{command}: not found");
+                        Console.WriteLine($"{argument}: not found");
                     }
                     break;
             }
